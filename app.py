@@ -1,0 +1,195 @@
+import streamlit as st
+import pandas as pd
+import yfinance as yf
+import mplfinance as mpf
+from datetime import datetime, timedelta
+import io
+import matplotlib.pyplot as plt
+
+# Define Nifty Defense stocks
+nifty_50 = ["ASIANPAINT.NS", "M&M.NS", "BHARTIARTL.NS", "MAXHEALTH.NS", "HINDUNILVR.NS", "ITC.NS", "RELIANCE.NS", "TATACONSUM.NS", "ICICIBANK.NS", "DRREDDY.NS", "SUNPHARMA.NS", "NESTLEIND.NS", "TITAN.NS", "EICHERMOT.NS", "HDFCBANK.NS", "APOLLOHOSP.NS", "SHRIRAMFIN.NS", "MARUTI.NS", "SBILIFE.NS", "HDFCLIFE.NS", "AXISBANK.NS", "BAJFINANCE.NS", "CIPLA.NS", "COALINDIA.NS", "BEL.NS", "SBIN.NS", "TRENT.NS", "BAJAJ-AUTO.NS", "TATAMOTORS.NS", "ADANIPORTS.NS", "NTPC.NS", "KOTAKBANK.NS", "TCS.NS", "ONGC.NS", "ULTRACEMCO.NS", "BAJAJFINSV.NS", "INDIGO.NS", "ADANIENT.NS", "JSWSTEEL.NS", "LT.NS", "GRASIM.NS", "POWERGRID.NS", "JIOFIN.NS", "HINDALCO.NS", "TECHM.NS", "HCLTECH.NS", "TATASTEEL.NS", "ETERNAL.NS", "INFY.NS", "WIPRO.NS"]
+
+nifty_100 = ["ADANIPOWER.NS", "ASIANPAINT.NS", "M&M.NS", "BHARTIARTL.NS", "MAXHEALTH.NS", "TVSMOTOR.NS", "HINDUNILVR.NS", "ITC.NS", "RELIANCE.NS", "TATACONSUM.NS", "ICICIBANK.NS", "DRREDDY.NS", "SUNPHARMA.NS", "GODREJCP.NS", "BRITANNIA.NS", "TORNTPHARM.NS", "BAJAJHLDNG.NS", "PIDILITIND.NS", "NESTLEIND.NS", "TITAN.NS", "HAVELLS.NS", "EICHERMOT.NS", "HDFCBANK.NS", "APOLLOHOSP.NS", "BOSCHLTD.NS", "SHRIRAMFIN.NS", "MARUTI.NS", "SBILIFE.NS", "HDFCLIFE.NS", "AXISBANK.NS", "BAJFINANCE.NS", "CIPLA.NS", "DIVISLAB.NS", "COALINDIA.NS", "BEL.NS", "HAL.NS", "VBL.NS", "SIEMENS.NS", "SBIN.NS", "UNITDSPR.NS", "ZYDUSLIFE.NS", "TRENT.NS", "BAJAJ-AUTO.NS", "BPCL.NS", "DLF.NS", "TATAMOTORS.NS", "ADANIPORTS.NS", "NTPC.NS", "ICICIGI.NS", "ABB.NS", "KOTAKBANK.NS", "TCS.NS", "ONGC.NS", "ULTRACEMCO.NS", "SOLARINDS.NS", "HYUNDAI.NS", "TATAPOWER.NS", "INDHOTEL.NS", "BAJAJFINSV.NS", "IOC.NS", "INDIGO.NS", "MAZDOCK.NS", "ADANIENT.NS", "JSWSTEEL.NS", "LTIM.NS", "DMART.NS", "BANKBARODA.NS", "CGPOWER.NS", "LT.NS", "GRASIM.NS", "LODHA.NS", "RECLTD.NS", "BAJAJHFL.NS", "CHOLAFIN.NS", "POWERGRID.NS", "JIOFIN.NS", "IRFC.NS", "VEDL.NS", "ENRIN.NS", "GAIL.NS", "LICI.NS", "HINDALCO.NS", "AMBUJACEM.NS", "PFC.NS", "TECHM.NS", "HCLTECH.NS", "SHREECEM.NS", "CANBK.NS", "NAUKRI.NS", "JSWENERGY.NS", "TATASTEEL.NS", "ETERNAL.NS", "JINDALSTEL.NS", "HINDZINC.NS", "PNB.NS", "ADANIENSOL.NS", "ADANIGREEN.NS", "INFY.NS", "MOTHERSON.NS", "WIPRO.NS"]
+
+nifty_200 = ["ADANIPOWER.NS", "ASIANPAINT.NS", "BHARTIHEXA.NS", "M&M.NS", "GODFRYPHLP.NS", "M&MFIN.NS", "BDL.NS", "BHARTIARTL.NS", "MAXHEALTH.NS", "TVSMOTOR.NS", "MUTHOOTFIN.NS", "INDUSINDBK.NS", "APLAPOLLO.NS", "HINDUNILVR.NS", "ITC.NS", "DABUR.NS", "RELIANCE.NS", "TATACONSUM.NS", "MARICO.NS", "ICICIBANK.NS", "GODREJPROP.NS", "DRREDDY.NS", "INDIANB.NS", "SUNPHARMA.NS", "GODREJCP.NS", "BRITANNIA.NS", "ALKEM.NS", "TORNTPHARM.NS", "BAJAJHLDNG.NS", "PIDILITIND.NS", "MANKIND.NS", "CUMMINSIND.NS", "NESTLEIND.NS", "VOLTAS.NS", "TITAN.NS", "HAVELLS.NS", "EICHERMOT.NS", "KALYANKJIL.NS", "PIIND.NS", "HDFCBANK.NS", "APOLLOHOSP.NS", "OBEROIRLTY.NS", "BOSCHLTD.NS", "SHRIRAMFIN.NS", "MARUTI.NS", "SBILIFE.NS", "PAYTM.NS", "BLUESTARCO.NS", "MRF.NS", "HDFCLIFE.NS", "AXISBANK.NS", "BAJFINANCE.NS", "CIPLA.NS", "DIVISLAB.NS", "EXIDEIND.NS", "HEROMOTOCO.NS", "COALINDIA.NS", "BEL.NS", "HAL.NS", "IDFCFIRSTB.NS", "AUBANK.NS", "VBL.NS", "SIEMENS.NS", "SBIN.NS", "NTPCGREEN.NS", "PAGEIND.NS", "UNITDSPR.NS", "ZYDUSLIFE.NS", "NHPC.NS", "COLPAL.NS", "TRENT.NS", "MOTILALOFS.NS", "BAJAJ-AUTO.NS", "BPCL.NS", "LICHSGFIN.NS", "DLF.NS", "TATAMOTORS.NS", "ADANIPORTS.NS", "COCHINSHIP.NS", "IRCTC.NS", "NTPC.NS", "MFSL.NS", "COROMANDEL.NS", "ITCHOTELS.NS", "PRESTIGE.NS", "ICICIGI.NS", "ABCAPITAL.NS", "ABB.NS", "KOTAKBANK.NS", "VMM.NS", "GLENMARK.NS", "TCS.NS", "ATGL.NS", "ONGC.NS", "ULTRACEMCO.NS", "SOLARINDS.NS", "INDUSTOWER.NS", "HYUNDAI.NS", "TATAPOWER.NS", "INDHOTEL.NS", "360ONE.NS", "ASTRAL.NS", "BAJAJFINSV.NS", "IOC.NS", "OFSS.NS", "JUBLFOOD.NS", "SUPREMEIND.NS", "INDIGO.NS", "MAZDOCK.NS", "ADANIENT.NS", "JSWSTEEL.NS", "LTIM.NS", "AUROPHARMA.NS", "DMART.NS", "BANKBARODA.NS", "TATAELXSI.NS", "CGPOWER.NS", "LT.NS", "HINDPETRO.NS", "IRB.NS", "GRASIM.NS", "LODHA.NS", "RECLTD.NS", "TATATECH.NS", "PHOENIXLTD.NS", "BAJAJHFL.NS", "PREMIERENE.NS", "PATANJALI.NS", "BIOCON.NS", "LUPIN.NS", "CONCOR.NS", "SRF.NS", "CHOLAFIN.NS", "BSE.NS", "POWERGRID.NS", "SBICARD.NS", "GMRAIRPORT.NS", "JIOFIN.NS", "FORTIS.NS", "NATIONALUM.NS", "FEDERALBNK.NS", "IRFC.NS", "VEDL.NS", "LTF.NS", "ENRIN.NS", "GAIL.NS", "SUZLON.NS", "UPL.NS", "LICI.NS", "HINDALCO.NS", "AMBUJACEM.NS", "PFC.NS", "DIXON.NS", "IREDA.NS", "TECHM.NS", "HCLTECH.NS", "SHREECEM.NS", "RVNL.NS", "CANBK.NS", "COFORGE.NS", "NAUKRI.NS", "NMDC.NS", "HUDCO.NS", "KPITTECH.NS", "JSWENERGY.NS", "PERSISTENT.NS", "TATASTEEL.NS", "ACC.NS", "ETERNAL.NS", "UNIONBANK.NS", "KEI.NS", "HDFCAMC.NS", "JINDALSTEL.NS", "HINDZINC.NS", "TIINDIA.NS", "IDEA.NS", "SONACOMS.NS", "BHEL.NS", "POWERINDIA.NS", "NYKAA.NS", "POLYCAB.NS", "OIL.NS", "BANKINDIA.NS", "PNB.NS", "ASHOKLEY.NS", "BHARATFORG.NS", "TORNTPOWER.NS", "ADANIENSOL.NS", "ADANIGREEN.NS", "INFY.NS", "MOTHERSON.NS", "SAIL.NS", "IGL.NS", "TATACOMM.NS", "POLICYBZR.NS", "WAAREEENER.NS", "MPHASIS.NS", "YESBANK.NS", "SWIGGY.NS", "WIPRO.NS"]
+
+nifty_500 = ["WHIRLPOOL.NS", "FORCEMOT.NS", "ADANIPOWER.NS", "BBTC.NS", "SBFC.NS", "DELHIVERY.NS", "ASIANPAINT.NS", "BHARTIHEXA.NS", "RADICO.NS", "LAURUSLABS.NS", "PGEL.NS", "ASAHIINDIA.NS", "NAM-INDIA.NS", "RAINBOW.NS", "M&M.NS", "GODFRYPHLP.NS", "OLAELEC.NS", "M&MFIN.NS", "DATAPATTNS.NS", "GPIL.NS", "VENTIVE.NS", "BDL.NS", "BHARTIARTL.NS", "BERGEPAINT.NS", "EMAMILTD.NS", "MAXHEALTH.NS", "STARHEALTH.NS", "TVSMOTOR.NS", "UTIAMC.NS", "SJVN.NS", "MUTHOOTFIN.NS", "ICICIPRULI.NS", "ZENTEC.NS", "INDUSINDBK.NS", "SUMICHEM.NS", "APLAPOLLO.NS", "NETWEB.NS", "HINDUNILVR.NS", "LEMONTREE.NS", "ATUL.NS", "ITC.NS", "DABUR.NS", "LTFOODS.NS", "RELIANCE.NS", "TATACONSUM.NS", "GVT&D.NS", "APTUS.NS", "MARICO.NS", "ICICIBANK.NS", "GODREJPROP.NS", "DRREDDY.NS", "INDIANB.NS", "BRIGADE.NS", "INOXINDIA.NS", "KSB.NS", "HBLENGINE.NS", "SUNPHARMA.NS", "DALBHARAT.NS", "GODREJCP.NS", "BRITANNIA.NS", "ALKEM.NS", "VGUARD.NS", "NAVINFLUOR.NS", "TORNTPHARM.NS", "BAJAJHLDNG.NS", "PIDILITIND.NS", "JKTYRE.NS", "MANKIND.NS", "CUMMINSIND.NS", "NESTLEIND.NS", "UBL.NS", "ACE.NS", "MANYAVAR.NS", "DCMSHRIRAM.NS", "TBOTEK.NS", "VOLTAS.NS", "ASTERDM.NS", "TITAN.NS", "JBCHEPHARM.NS", "GLAND.NS", "ANANDRATHI.NS", "NATCOPHARM.NS", "HAVELLS.NS", "ZENSARTECH.NS", "EICHERMOT.NS", "KIRLOSENG.NS", "GLAXO.NS", "TRIVENI.NS", "KALYANKJIL.NS", "PIIND.NS", "HDFCBANK.NS", "APOLLOHOSP.NS", "OBEROIRLTY.NS", "ERIS.NS", "HONAUT.NS", "BOSCHLTD.NS", "SHRIRAMFIN.NS", "FIRSTCRY.NS", "CHALET.NS", "APLLTD.NS", "MARUTI.NS", "ANGELONE.NS", "JYOTHYLAB.NS", "SBILIFE.NS", "PAYTM.NS", "BLUESTARCO.NS", "SAPPHIRE.NS", "KARURVYSYA.NS", "MRF.NS", "3MINDIA.NS", "CCL.NS", "INDGN.NS", "NEULANDLAB.NS", "HDFCLIFE.NS", "KIRLOSBROS.NS", "AXISBANK.NS", "KAYNES.NS", "BATAINDIA.NS", "BAJFINANCE.NS", "CIPLA.NS", "DIVISLAB.NS", "EXIDEIND.NS", "HEROMOTOCO.NS", "COALINDIA.NS", "BEL.NS", "HAL.NS", "GUJGASLTD.NS", "IDFCFIRSTB.NS", "ASTRAZEN.NS", "FSL.NS", "AUBANK.NS", "AKZOINDIA.NS", "AEGISLOG.NS", "VBL.NS", "SIEMENS.NS", "SBIN.NS", "AKUMS.NS", "PTCIL.NS", "BIKAJI.NS", "APOLLOTYRE.NS", "SHYAMMETL.NS", "AAVAS.NS", "CEATLTD.NS", "NTPCGREEN.NS", "SAMMAANCAP.NS", "PAGEIND.NS", "UNITDSPR.NS", "ZYDUSLIFE.NS", "NHPC.NS", "COLPAL.NS", "DEEPAKFERT.NS", "GODREJIND.NS", "AIAENG.NS", "THELEELA.NS", "FINPIPE.NS", "CONCORDBIO.NS", "TRENT.NS", "LLOYDSME.NS", "MCX.NS", "MOTILALOFS.NS", "NUVOCO.NS", "JUBLPHARMA.NS", "AMBER.NS", "NLCINDIA.NS", "JYOTICNC.NS", "GILLETTE.NS", "ALKYLAMINE.NS", "BAJAJ-AUTO.NS", "BPCL.NS", "LICHSGFIN.NS", "TARIL.NS", "SYNGENE.NS", "CLEAN.NS", "DLF.NS", "NAVA.NS", "IPCALAB.NS", "TATAMOTORS.NS", "AGARWALEYE.NS", "CGCL.NS", "BLUEDART.NS", "ADANIPORTS.NS", "ABSLAMC.NS", "PFIZER.NS", "COCHINSHIP.NS", "SYRMA.NS", "JPPOWER.NS", "ABBOTINDIA.NS", "IRCTC.NS", "ABREL.NS", "EMCURE.NS", "NTPC.NS", "MFSL.NS", "COROMANDEL.NS", "SIGNATURE.NS", "ITCHOTELS.NS", "PRESTIGE.NS", "IIFL.NS", "KFINTECH.NS", "ICICIGI.NS", "ABCAPITAL.NS", "TRITURBINE.NS", "TIMKEN.NS", "BALKRISIND.NS", "MMTC.NS", "VIJAYA.NS", "ABB.NS", "KOTAKBANK.NS", "VMM.NS", "GLENMARK.NS", "DEEPAKNTR.NS", "GODREJAGRO.NS", "SCHNEIDER.NS", "TCS.NS", "KAJARIACER.NS", "DEVYANI.NS", "BANDHANBNK.NS", "PRAJIND.NS", "INOXWIND.NS", "ATGL.NS", "SKFINDIA.NS", "ONGC.NS", "ENGINERSIN.NS", "HINDCOPPER.NS", "ARE&M.NS", "CUB.NS", "ULTRACEMCO.NS", "SUNTV.NS", "MAHSCOOTER.NS", "SOLARINDS.NS", "CROMPTON.NS", "TEJASNET.NS", "INDIACEM.NS", "INDUSTOWER.NS", "AARTIIND.NS", "ZFCVINDIA.NS", "GRAPHITE.NS", "HYUNDAI.NS", "TATAPOWER.NS", "INDHOTEL.NS", "360ONE.NS", "ASTRAL.NS", "CANFINHOME.NS", "BAJAJFINSV.NS", "NH.NS", "CENTURYPLY.NS", "CDSL.NS", "BEML.NS", "CRISIL.NS", "GRANULES.NS", "ABLBL.NS", "EIHOTEL.NS", "IOC.NS", "OFSS.NS", "JUBLFOOD.NS", "SUPREMEIND.NS", "CERA.NS", "INDIGO.NS", "MAZDOCK.NS", "ADANIENT.NS", "ITI.NS", "IEX.NS", "CASTROLIND.NS", "ATHERENERG.NS", "JSWSTEEL.NS", "IDBI.NS", "LTIM.NS", "AUROPHARMA.NS", "DMART.NS", "PNBHOUSING.NS", "BANKBARODA.NS", "TATAELXSI.NS", "CHOICEIN.NS", "THERMAX.NS", "TRIDENT.NS", "NEWGEN.NS", "MSUMI.NS", "CGPOWER.NS", "IKS.NS", "BALRAMCHIN.NS", "GRSE.NS", "LT.NS", "METROPOLIS.NS", "GSPL.NS", "TTML.NS", "HINDPETRO.NS", "PPLPHARMA.NS", "IRB.NS", "GRASIM.NS", "LODHA.NS", "LINDEINDIA.NS", "CRAFTSMAN.NS", "SAGILITY.NS", "POLYMED.NS", "RECLTD.NS", "TATATECH.NS", "MANAPPURAM.NS", "PHOENIXLTD.NS", "BAJAJHFL.NS", "PREMIERENE.NS", "WOCKPHARMA.NS", "PATANJALI.NS", "BIOCON.NS", "SWANCORP.NS", "LUPIN.NS", "ELECON.NS", "SUNDRMFAST.NS", "NBCC.NS", "CONCOR.NS", "JWL.NS", "SRF.NS", "CHOLAFIN.NS", "KPRMILL.NS", "INDIAMART.NS", "AJANTPHARM.NS", "BLS.NS", "COHANCE.NS", "BSE.NS", "HONASA.NS", "JKCEMENT.NS", "SUNDARMFIN.NS", "GRAVITA.NS", "POWERGRID.NS", "AADHARHFC.NS", "SBICARD.NS", "GMRAIRPORT.NS", "GICRE.NS", "RAMCOCEM.NS", "JIOFIN.NS", "SAILIFE.NS", "NIACL.NS", "FORTIS.NS", "NATIONALUM.NS", "MAHABANK.NS", "FEDERALBNK.NS", "CAMS.NS", "IRFC.NS", "JUBLINGREA.NS", "LTTS.NS", "VEDL.NS", "LTF.NS", "ENRIN.NS", "GAIL.NS", "FINCABLES.NS", "RRKABEL.NS", "SONATSOFTW.NS", "SUZLON.NS", "UPL.NS", "FIVESTAR.NS", "DOMS.NS", "LICI.NS", "HINDALCO.NS", "AMBUJACEM.NS", "PVRINOX.NS", "BSOFT.NS", "ELGIEQUIP.NS", "PFC.NS", "PETRONET.NS", "DIXON.NS", "WELCORP.NS", "RPOWER.NS", "IREDA.NS", "EIDPARRY.NS", "MAPMYINDIA.NS", "ECLERX.NS", "TECHM.NS", "CHAMBLFERT.NS", "CYIENT.NS", "ACMESOLAR.NS", "HCLTECH.NS", "SHREECEM.NS", "MGL.NS", "GESHIP.NS", "RHIM.NS", "HEXT.NS", "INTELLECT.NS", "HAPPSTMNDS.NS", "RAILTEL.NS", "RVNL.NS", "CANBK.NS", "KEC.NS", "KPIL.NS", "RITES.NS", "COFORGE.NS", "CAPLIPOINT.NS", "NAUKRI.NS", "NMDC.NS", "OLECTRA.NS", "HUDCO.NS", "ENDURANCE.NS", "REDINGTON.NS", "MEDANTA.NS", "IGIL.NS", "KPITTECH.NS", "APARINDS.NS", "FLUOROCHEM.NS", "JSWENERGY.NS", "SCHAEFFLER.NS", "CAMPUS.NS", "VTL.NS", "PERSISTENT.NS", "FACT.NS", "BASF.NS", "TATASTEEL.NS", "ACC.NS", "ETERNAL.NS", "UNOMINDA.NS", "UNIONBANK.NS", "TITAGARH.NS", "NCC.NS", "KEI.NS", "HDFCAMC.NS", "CHENNPETRO.NS", "JINDALSTEL.NS", "HINDZINC.NS", "TIINDIA.NS", "ONESOURCE.NS", "CHOLAHLDNG.NS", "IDEA.NS", "SONACOMS.NS", "UCOBANK.NS", "CARBORUNIV.NS", "BHEL.NS", "LALPATHLAB.NS", "BAYERCROP.NS", "POWERINDIA.NS", "SCI.NS", "NYKAA.NS", "TECHNOE.NS", "POLYCAB.NS", "HEG.NS", "J&KBANK.NS", "ABFRL.NS", "SOBHA.NS", "SAREGAMA.NS", "IFCI.NS", "JSL.NS", "NSLNISP.NS", "TATACHEM.NS", "OIL.NS", "BANKINDIA.NS", "DBREALTY.NS", "JBMA.NS", "ANANTRAJ.NS", "KIMS.NS", "LATENTVIEW.NS", "PNB.NS", "AWL.NS", "ASHOKLEY.NS", "BHARATFORG.NS", "TORNTPOWER.NS", "HOMEFIRST.NS", "ADANIENSOL.NS", "ADANIGREEN.NS", "INFY.NS", "MRPL.NS", "MAHSEAMLES.NS", "TATAINVEST.NS", "ESCORTS.NS", "MOTHERSON.NS", "SAIL.NS", "JMFINANCIL.NS", "RCF.NS", "IGL.NS", "RBLBANK.NS", "HSCL.NS", "IOB.NS", "PGHH.NS", "IRCON.NS", "POONAWALLA.NS", "TATACOMM.NS", "POLICYBZR.NS", "AIIL.NS", "CESC.NS", "GODIGIT.NS", "USHAMART.NS", "CENTRALBK.NS", "WAAREEENER.NS", "NIVABUPA.NS", "AEGISVOPAK.NS", "HFCL.NS", "AFFLE.NS", "BLUEJET.NS", "MINDACORP.NS", "NUVAMA.NS", "RELINFRA.NS", "SARDAEN.NS", "AFCONS.NS", "MPHASIS.NS", "YESBANK.NS", "RKFORGE.NS", "SWIGGY.NS", "ZEEL.NS", "JSWINFRA.NS", "GMDCLTD.NS", "PCBL.NS", "ALOKINDS.NS", "WELSPUNLIV.NS", "WIPRO.NS", "JINDALSAW.NS", "CREDITACC.NS"]
+
+nifty_defense_stocks = [
+    "MTARTECH.NS", "DATAPATTNS.NS", "BDL.NS", "ASTRAMICRO.NS", "ZENTEC.NS",
+    "CYIENTDLM.NS", "UNIMECH.NS", "MIDHANI.NS", "BEL.NS", "PARAS.NS", "HAL.NS", 
+    "COCHINSHIP.NS", "SOLARINDS.NS", "BEML.NS", "MAZDOCK.NS", "GRSE.NS",
+    "DYNAMATECH.NS", "BHARATFORG.NS"
+]
+
+def calculate_brick_size(current_price):
+    return current_price * 0.01  # 1%
+
+def fetch_and_plot_renko(ticker):
+    try:
+        # Last 6 months
+        end_date = datetime.today()
+        start_date = end_date - timedelta(days=6*30)
+        
+        # Download historical data
+        data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
+        
+        if data.empty:
+            return None, f"No data for {ticker}"
+        
+        # Flatten multi-index columns if present
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = [col[0] for col in data.columns]
+        
+        # Keep only OHLC
+        ohlc_cols = ["Open", "High", "Low", "Close"]
+        data = data[[col for col in ohlc_cols if col in data.columns]]
+        
+        # Convert to numeric and drop invalid rows
+        data = data.apply(pd.to_numeric, errors="coerce").dropna()
+        
+        # Skip if insufficient data
+        if data.empty or len(data) < 10:
+            return None, f"Not enough valid data for {ticker}"
+        
+        current_price = float(data["Close"].iloc[-1])
+        brick_size = calculate_brick_size(current_price)
+        
+        # Create a figure for the Renko chart
+        fig, ax = mpf.plot(
+            data,
+            type="renko",
+            renko_params=dict(brick_size=brick_size),
+            style="charles",
+            title=f"{ticker} Renko Chart",
+            returnfig=True
+        )
+        
+        # Save plot to bytes buffer
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", bbox_inches="tight")
+        buf.seek(0)
+        plt.close(fig)
+        
+        return buf, None
+    except Exception as e:
+        return None, f"Error for {ticker}: {str(e)}"
+
+# Streamlit app
+st.title("Stock Renko Chart")
+
+# Checkboxes for Nifty index selection
+st.header("Select Nifty Index")
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
+    nifty_50_checked = st.checkbox("Nifty50")
+with col2:
+    nifty_100_checked = st.checkbox("Nifty100")
+with col3:
+    nifty_200_checked = st.checkbox("Nifty200")
+with col4:
+    nifty_500_checked = st.checkbox("Nifty500")
+with col5:
+    nifty_defense_checked = st.checkbox("Nifty Defense")
+
+# Check if any index is selected
+index_selected = nifty_50_checked or nifty_100_checked or nifty_200_checked or nifty_500_checked or nifty_defense_checked
+
+# Combine stocks from selected indices
+available_stocks = set()
+if nifty_50_checked:
+    available_stocks.update(nifty_50)
+if nifty_100_checked:
+    available_stocks.update(nifty_100)
+if nifty_200_checked:
+    available_stocks.update(nifty_200)
+if nifty_500_checked:
+    available_stocks.update(nifty_500)
+if nifty_defense_checked:
+    available_stocks.update(nifty_defense_stocks)
+
+# Google-like search bar with autocomplete
+st.markdown("""
+    <style>
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .search-bar input {
+            width: 60%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            outline: none;
+        }
+        .search-bar input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.5);
+        }
+        .suggestions {
+            width: 60%;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            position: relative;
+            z-index: 1000;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Initialize session state for search term
+if 'selected_stock' not in st.session_state:
+    st.session_state.selected_stock = ""
+
+# Search bar
+search_term = st.text_input(
+    "Search for a stock (e.g., BEL)",
+    value=st.session_state.selected_stock,
+    key="search_input",
+    label_visibility="collapsed"
+)
+
+# Normalize search term
+search_term = search_term.strip().upper()
+if search_term and not search_term.endswith(".NS"):
+    search_term = f"{search_term}.NS"
+
+# Autocomplete suggestions for selected indices
+if index_selected and search_term:
+    suggestions = [stock for stock in available_stocks if search_term.split(".NS")[0].lower() in stock.lower()]
+    if suggestions:
+        st.markdown('<div class="suggestions">', unsafe_allow_html=True)
+        for suggestion in sorted(suggestions):  # Sort for consistent display
+            if st.button(suggestion, key=f"suggestion_{suggestion}"):
+                st.session_state.selected_stock = suggestion
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# Display chart if an index is selected and a stock is entered or selected
+if index_selected and (search_term or st.session_state.selected_stock):
+    stock_to_plot = st.session_state.selected_stock if st.session_state.selected_stock else search_term
+    if stock_to_plot not in available_stocks:
+        st.error(f"Please select a valid stock from the selected indices.")
+    else:
+        st.subheader(f"Renko Chart for {stock_to_plot}")
+        chart, error = fetch_and_plot_renko(stock_to_plot)
+        
+        if chart:
+            st.image(chart, use_container_width=True)
+        else:
+            st.error(error)
+elif not index_selected and (search_term or st.session_state.selected_stock):
+    st.error("Please select at least one Nifty index before searching for a stock.")
