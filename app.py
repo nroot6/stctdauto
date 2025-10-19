@@ -199,3 +199,6 @@ if search_term or st.session_state.selected_stock:
             st.image(chart, use_container_width=True)
         else:
             st.error(error)
+            
+# Credits footer
+st.markdown('<div class="footer">Designed by <span class="name">Naresh Kumar</span> ❤️💻⚙️</div>', unsafe_allow_html=True)
