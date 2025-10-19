@@ -5,7 +5,7 @@ import mplfinance as mpf
 from datetime import datetime, timedelta
 import io
 import matplotlib.pyplot as plt
-from stock_symbols import nifty_50, nifty_100, nifty_200, nifty_500, nifty_defense_stocks
+from stock_symbols import nifty_50, nifty_100, nifty_200, nifty_500, nifty_defense_stocks, nifty_all_symbols
 
 def calculate_brick_size(current_price):
     return current_price * 0.01  # 1%
@@ -65,7 +65,7 @@ st.title("Stock Chart")
 
 # Checkboxes for Nifty index selection
 st.header("Select Nifty Index")
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 with col1:
     all_checked = st.checkbox("All")
 with col2:
@@ -78,9 +78,12 @@ with col5:
     nifty_500_checked = st.checkbox("Nifty500", value=all_checked)
 with col6:
     nifty_defense_checked = st.checkbox("Nifty Defense", value=all_checked)
+with col7:
+    nifty_all_checked = st.checkbox("Nifty All Stocks", value=all_checked)
+
 
 # Check if any index is selected
-index_selected = nifty_50_checked or nifty_100_checked or nifty_200_checked or nifty_500_checked or nifty_defense_checked or all_checked
+index_selected = nifty_50_checked or nifty_100_checked or nifty_200_checked or nifty_500_checked or nifty_defense_checked or all_checked or nifty_all_checked
 
 # Combine stocks from selected indices
 available_stocks = set()
@@ -94,6 +97,8 @@ if all_checked or nifty_500_checked:
     available_stocks.update(nifty_500)
 if all_checked or nifty_defense_checked:
     available_stocks.update(nifty_defense_stocks)
+if all_checked or nifty_all_checked:
+    available_stocks.update(nifty_all_symbols)
 
 # Google-like search bar with autocomplete
 st.markdown("""
@@ -184,6 +189,8 @@ if search_term or st.session_state.selected_stock:
             indices.append("Nifty 500")
         if stock_to_plot in nifty_defense_stocks:
             indices.append("Nifty Defense")
+        if stock_to_plot in nifty_all_symbols:
+            indices.append("Nifty All Stocks")
         
         # Display the indices the stock is tagged in
         if indices:
