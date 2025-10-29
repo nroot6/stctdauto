@@ -8,6 +8,7 @@ import mplfinance as mpf
 from datetime import datetime, timedelta
 import io
 import matplotlib.pyplot as plt
+from yahoo_fin import stock_info as si
 # from stock_symbols import nifty_50, nifty_100, nifty_200, nifty_500, nifty_defense_stocks, nifty_all_symbols
 
 # Define Nifty Defense stocks
@@ -244,8 +245,9 @@ def fetch_and_plot_renko(ticker):
         start_date = end_date - timedelta(days=6*30)
         
         # Download historical data
-        data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
-        
+        # data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
+        data = si.get_data(ticker, start_date=start_date, end_date=end_date)
+
         if data.empty:
             return None, f"No data for {ticker}"
         
