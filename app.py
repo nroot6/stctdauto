@@ -3,7 +3,7 @@
 
 import streamlit as st
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf
 import mplfinance as mpf
 from datetime import datetime, timedelta
 import io
