@@ -3,12 +3,11 @@
 
 import streamlit as st
 import pandas as pd
-# import yfinance as yf
+import yfinance as yf
 import mplfinance as mpf
 from datetime import datetime, timedelta
 import io
 import matplotlib.pyplot as plt
-from yahoo_fin import stock_info as si
 # from stock_symbols import nifty_50, nifty_100, nifty_200, nifty_500, nifty_defense_stocks, nifty_all_symbols
 
 # Define Nifty Defense stocks
@@ -245,9 +244,8 @@ def fetch_and_plot_renko(ticker):
         start_date = end_date - timedelta(days=6*30)
         
         # Download historical data
-        # data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
-        data = si.get_data(ticker, start_date=start_date, end_date=end_date)
-
+        data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
+      
         if data.empty:
             return None, f"No data for {ticker}"
         
@@ -288,6 +286,10 @@ def fetch_and_plot_renko(ticker):
         return buf, None
     except Exception as e:
         return None, f"Error for {ticker}: {str(e)}"
+
+@st.cache_data(ttl=3600)
+def cached_fetch_and_plot_renko(ticker):
+    return fetch_and_plot_renko(ticker)
 
 # Streamlit app
 st.title("Stock Chart")
@@ -429,7 +431,8 @@ if search_term or st.session_state.selected_stock:
         
         # Plot the Renko chart
         st.subheader(f"Renko Chart for {stock_to_plot}")
-        chart, error = fetch_and_plot_renko(stock_to_plot)
+        # chart, error = fetch_and_plot_renko(stock_to_plot)
+        chart, error = cached_fetch_and_plot_renko(stock_to_plot)
         
         if chart:
             st.image(chart, use_container_width=True)
