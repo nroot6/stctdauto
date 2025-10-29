@@ -3,6 +3,6 @@ numpy
 matplotlib
 finance
 mplfinance
-#yfinance
+yfinance
 streamlit
-yahoo_fin
+requests_html
